@@ -35,6 +35,11 @@ stages:
                   $terraformURL = $releases[0].html_url
                   $download = Invoke-WebRequest -UseBasicParsing -Uri $terraformURL -DisableKeepAlive -OutFile "$(Agent.TempDirectory)\terraform.zip" -ErrorAction SilentlyContinue -PassThru
                   Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
+                  New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
+                  Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath "$(Agent.TempDirectory)\terraform" -Force
+                  $path = [Environment]::GetEnvironmentVariable('Path','User')
+                  [Environment]::SetEnvironmentVariable('PATH', "${path};$(Agent.TempDirectory)\terraform", 'User')
+
 #
 #            - task: PowerShell@2
 #              inputs:
