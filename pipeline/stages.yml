@@ -31,13 +31,13 @@ stages:
                 targetType: inline
                 script: |
                   $uri = "https://gist.githubusercontent.com/whiteken/7d033d38b8171002c573c7129bddfdd7/raw/392baf575e4f86df6afbfe85d6794cf5861fe3a9/downloadTerraform.ps1"
-                  Invoke-WebRequest -Uri $uri -OutFile "$env:temp\download-terraform.ps1"
-                  $env:temp\download-terraform.ps1 -Latest
+                  Invoke-WebRequest -Uri $uri -OutFile "$(Agent.TempDirectory)\download-terraform.ps1"
+                  $(Agent.TempDirectory)\download-terraform.ps1 -Latest
 
             - task: PowerShell@2
               inputs:
                 targetType: inline
                 script: |
-                  Get-ChildItem $(Build.SourcesDirectory) -Recurse -Verbose
-                  #Set-Location $(Build.SourcesDirectory)\IaC
+                  Get-ChildItem $(Pipeline.Workspace) -Recurse -Verbose
+                  #Set-Location $(Pipeline.Workspace)\IaC
                   terraform init
