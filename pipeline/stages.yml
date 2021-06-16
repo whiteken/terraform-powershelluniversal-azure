@@ -26,6 +26,10 @@ stages:
         runOnce:    #rolling, canary are the other strategies that are supported
           deploy:
             steps:
+            - task: TerraformInstaller
+              displayName: install terraform
+              inputs:
+                terraformVersion: latest
             - task: PowerShell@2
               inputs:
                 targetType: inline
