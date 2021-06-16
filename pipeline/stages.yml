@@ -28,13 +28,12 @@ stages:
             Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
             $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
             Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
-            $path = [Environment]::GetEnvironmentVariable('Path','User')
-            [Environment]::SetEnvironmentVariable('PATH', "${path};$(Agent.TempDirectory)\terraform", 'User')
+            Copy-Item "$(Agent.TempDirectory)\terraform\terraform.exe" -Destination "$(System.DefaultWorkingDirectory)\IaC\terraform.exe"
 
       - task: PowerShell@2
         inputs:
           targetType: inline
           script: |
-            Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse -Verbose
+            Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\IaC" -Recurse -Verbose
             Set-Location $(Build.SourcesDirectory)\IaC
             terraform init
