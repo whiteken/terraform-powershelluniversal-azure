@@ -32,11 +32,12 @@ stages:
                 script: |
                   $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
                   $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
-                  $terraformZipURL = "$(${releases}[0].html_url).zip"
+                  $downloadVersion = $releases.Where({!$_.prerelease})[0].name.trim('v')
+                  $terraformFile = "terraform_${downloadVersion}_windows_amd64.zip"
+                  $terraformURL = "https://releases.hashicorp.com/terraform/${downloadVersion}/${terraformFile}"
                   $output = "$(Agent.TempDirectory)\terraform.zip"
                   $wc = New-Object System.Net.WebClient
-                  $wc.DownloadFile($terraformZipURL, $output)
-                  #$download = Invoke-WebRequest -UseBasicParsing -Uri $terraformZipURL -DisableKeepAlive -OutFile "$(Agent.TempDirectory)\terraform.zip" -ErrorAction SilentlyContinue -PassThru
+                  $wc.DownloadFile($terraformURL, $output)
                   Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
                   $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
                   Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
