@@ -30,5 +30,5 @@ stages:
               inputs:
                 targetType: inline
                 script: |
-                  Set-Location ${{ variables['Build.SourcesDirectory'] }}/IaC
+                  Set-Location $(Build.SourcesDirectory)/IaC
                   terraform init
