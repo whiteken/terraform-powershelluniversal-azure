@@ -49,6 +49,6 @@ stages:
               inputs:
                 targetType: inline
                 script: |
-                  Get-ChildItem $(Build.SourcesDirectory) -Recurse -Verbose
-                  Set-Location $(Build.SourcesDirectory)\IaC
-                  terraform init
+                  Get-ChildItem $(System.DefaultWorkingDirectory) -Recurse -Verbose
+                  #Set-Location $(Build.SourcesDirectory)\IaC
+                  #terraform init
