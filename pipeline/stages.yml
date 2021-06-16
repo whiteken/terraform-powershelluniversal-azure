@@ -30,5 +30,6 @@ stages:
               inputs:
                 targetType: inline
                 script: |
-                  Set-Location $(Build.SourcesDirectory)/IaC
+                  Get-ChildItem $(Build.SourcesDirectory) -Recurse
+                  Set-Location $(Build.SourcesDirectory)\IaC
                   terraform init
