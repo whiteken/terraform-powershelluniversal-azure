@@ -6,49 +6,35 @@ parameters:
 
 stages:
 - ${{ if eq(parameters.terraformOperation, 'init') }}:
-  - stage: Terraform_init  # name of the stage (A-Z, a-z, 0-9, and underscore)
-    displayName: 'Terrafrom init'  # friendly name to display in the UI
-    dependsOn: []
+  - stage: Terraform_init
     jobs:
-    - deployment: init   # name of the deployment job, A-Z, a-z, 0-9, and underscore. The word "deploy" is a keyword and is unsupported as the deployment name.
-      displayName: 'Terraform init'  # friendly name to display in the UI
-      pool:                # see pool schema
-        vmImage: 'vs2017-win2016' #'Ubuntu-16.04' #"vs2017-win2016" #Ubuntu-latest
-        demands: []
-      #workspace:
-      #  clean: all # what to clean up before the job runs
-      continueOnError: true                # 'true' if future jobs should run even if this job fails; defaults to 'false'
-      timeoutInMinutes: 3       # how long to run the job before automatically cancelling
-      cancelTimeoutInMinutes: 2  # how much time to give 'run always even if cancelled tasks' before killing them
-      #variables: # several syntaxes, see specific section
-      environment: Azure # target environment name and optionally a resource name to record the deployment history; format: <environment-name>.<resource-name>
-      strategy:
-        runOnce:    #rolling, canary are the other strategies that are supported
-          deploy:
-            steps:
-            - task: PowerShell@2
-              inputs:
-                targetType: inline
-                script: |
-                  $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
-                  $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
-                  $downloadVersion = $releases.Where({!$_.prerelease})[0].name.trim('v')
-                  $terraformFile = "terraform_${downloadVersion}_windows_amd64.zip"
-                  $terraformURL = "https://releases.hashicorp.com/terraform/${downloadVersion}/${terraformFile}"
-                  $output = "$(Agent.TempDirectory)\terraform.zip"
-                  $wc = New-Object System.Net.WebClient
-                  $wc.DownloadFile($terraformURL, $output)
-                  Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
-                  $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
-                  Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
-                  $path = [Environment]::GetEnvironmentVariable('Path','User')
-                  [Environment]::SetEnvironmentVariable('PATH', "${path};$(Agent.TempDirectory)\terraform", 'User')
+    - job: Terraform_init
+      pool:
+        vmImage: 'vs2017-win2016'
 
+      steps:
+      - task: PowerShell@2
+        inputs:
+          targetType: inline
+          script: |
+            $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
+            $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
+            $downloadVersion = $releases.Where({!$_.prerelease})[0].name.trim('v')
+            $terraformFile = "terraform_${downloadVersion}_windows_amd64.zip"
+            $terraformURL = "https://releases.hashicorp.com/terraform/${downloadVersion}/${terraformFile}"
+            $output = "$(Agent.TempDirectory)\terraform.zip"
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($terraformURL, $output)
+            Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
+            $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
+            Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
+            $path = [Environment]::GetEnvironmentVariable('Path','User')
+            [Environment]::SetEnvironmentVariable('PATH', "${path};$(Agent.TempDirectory)\terraform", 'User')
 
-            - task: PowerShell@2
-              inputs:
-                targetType: inline
-                script: |
-                  Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse -Verbose
-                  #Set-Location $(Build.SourcesDirectory)/IaC
-                  #terraform init
+      - task: PowerShell@2
+        inputs:
+          targetType: inline
+          script: |
+            Get-ChildItem -Path "$(System.DefaultWorkingDirectory)" -Recurse -Verbose
+            Set-Location $(Build.SourcesDirectory)\IaC
+            terraform init
