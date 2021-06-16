@@ -15,8 +15,8 @@ stages:
       pool:                # see pool schema
         vmImage: 'vs2017-win2016' #'Ubuntu-16.04' #"vs2017-win2016" #Ubuntu-latest
         demands: []
-      workspace:
-        clean: all # what to clean up before the job runs
+      #workspace:
+      #  clean: all # what to clean up before the job runs
       continueOnError: true                # 'true' if future jobs should run even if this job fails; defaults to 'false'
       timeoutInMinutes: 3       # how long to run the job before automatically cancelling
       cancelTimeoutInMinutes: 2  # how much time to give 'run always even if cancelled tasks' before killing them
