@@ -36,4 +36,4 @@ stages:
           script: |
             Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\IaC" -Recurse -Verbose
             Set-Location $(Build.SourcesDirectory)\IaC
-            terraform init
+            .\terraform.exe init
