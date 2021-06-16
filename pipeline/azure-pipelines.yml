@@ -6,6 +6,7 @@ parameters:
   type: string
   default: 'plan'
   values:
+    - 'init'
     - 'plan'
     - 'apply'
     - 'destroy'
