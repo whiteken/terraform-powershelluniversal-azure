@@ -31,12 +31,15 @@ stages:
                 targetType: inline
                 script: |
                   $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
-                  $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl
-                  $terraformURL = $releases[0].html_url
-                  $download = Invoke-WebRequest -UseBasicParsing -Uri $terraformURL -DisableKeepAlive -OutFile "$(Agent.TempDirectory)\terraform.zip" -ErrorAction SilentlyContinue -PassThru
+                  $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
+                  $terraformZipURL = "$(${releases}[0].html_url).zip"
+                  $output = "$(Agent.TempDirectory)\terraform.zip"
+                  $wc = New-Object System.Net.WebClient
+                  $wc.DownloadFile($terraformZipURL, $output)
+                  #$download = Invoke-WebRequest -UseBasicParsing -Uri $terraformZipURL -DisableKeepAlive -OutFile "$(Agent.TempDirectory)\terraform.zip" -ErrorAction SilentlyContinue -PassThru
                   Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
-                  New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
-                  Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath "$(Agent.TempDirectory)\terraform" -Force
+                  $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
+                  Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
                   $path = [Environment]::GetEnvironmentVariable('Path','User')
                   [Environment]::SetEnvironmentVariable('PATH', "${path};$(Agent.TempDirectory)\terraform", 'User')
 
