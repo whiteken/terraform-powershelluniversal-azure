@@ -30,14 +30,16 @@ stages:
               inputs:
                 targetType: inline
                 script: |
-                  $uri = "https://gist.githubusercontent.com/whiteken/7d033d38b8171002c573c7129bddfdd7/raw/392baf575e4f86df6afbfe85d6794cf5861fe3a9/downloadTerraform.ps1"
-                  Invoke-WebRequest -Uri $uri -OutFile "$(Agent.TempDirectory)\download-terraform.ps1"
-                  $(Agent.TempDirectory)\download-terraform.ps1 -Latest -SaveToPath $(Agent.TempDirectory)
-
-            - task: PowerShell@2
-              inputs:
-                targetType: inline
-                script: |
-                  Get-ChildItem $(Pipeline.Workspace) -Recurse -Verbose
-                  #Set-Location $(Pipeline.Workspace)\IaC
-                  terraform init
+                  $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
+                  $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl
+                  $terraformURL = $releases[0].html_url
+                  $download = Invoke-WebRequest -UseBasicParsing -Uri $terraformURL -DisableKeepAlive -OutFile "$(Agent.TempDirectory)\terraform.zip" -ErrorAction SilentlyContinue -PassThru
+                  Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
+#
+#            - task: PowerShell@2
+#              inputs:
+#                targetType: inline
+#                script: |
+#                  Get-ChildItem $(Pipeline.Workspace) -Recurse -Verbose
+#                  #Set-Location $(Pipeline.Workspace)\IaC
+#                  terraform init
