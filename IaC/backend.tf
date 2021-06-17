@@ -3,7 +3,7 @@ terraform {
     organization = "Auto_Cloud"
 
     workspaces {
-      name = "azure-powershelluniversal-webapp"
+      name = "powershelluniversal-webapp-azure"
     }
   }
 }
