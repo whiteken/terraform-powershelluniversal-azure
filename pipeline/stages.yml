@@ -34,8 +34,7 @@ stages:
             Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
             Copy-Item "$(Agent.TempDirectory)\terraform\terraform.exe" -Destination "$(System.DefaultWorkingDirectory)\IaC\terraform.exe"
 
-      - script: |
-          echo "##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc"
+      - bash: echo '##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc'
         displayName: set TF_CLI_CONFIG_FILE environment variable for subsequent steps
 
       - task: PowerShell@2
