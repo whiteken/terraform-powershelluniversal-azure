@@ -42,7 +42,7 @@ stages:
           targetType: inline
           script: |
             $content = Get-Content -Path $(TF_CLI_CONFIG_FILE) -Raw
-            $content = $content -replace '%%terraform-cloud-secret%%', $(terraform-cloud-secret)
+            $content = $content -replace '%%terraform-cloud-secret%%', "$(terraform-cloud-secret)"
             $content | Set-Content -Path $(TF_CLI_CONFIG_FILE)
 
       - task: PowerShell@2
