@@ -35,14 +35,14 @@ stages:
             Copy-Item "$(Agent.TempDirectory)\terraform\terraform.exe" -Destination "$(System.DefaultWorkingDirectory)\IaC\terraform.exe"
 
       - script: |
-          echo '##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc'
+          echo "##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc"
         displayName: set TF_CLI_CONFIG_FILE environment variable for subsequent steps
 
       - task: PowerShell@2
         inputs:
           targetType: inline
           script: |
-            $content = Get-Content -path $(TF_CLI_CONFIG_FILE) -Raw
+            $content = Get-Content -Path $(TF_CLI_CONFIG_FILE) -Raw
             $content = $content -replace '%%terraform-cloud-secret%%', $(terraform-cloud-secret)
             $content | Set-Content -Path $(TF_CLI_CONFIG_FILE)
 
