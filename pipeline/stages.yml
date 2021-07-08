@@ -17,6 +17,7 @@ stages:
 
       steps:
       - task: PowerShell@2
+        displayName: Download terraform
         inputs:
           targetType: inline
           script: |
@@ -38,6 +39,7 @@ stages:
         displayName: set TF_CLI_CONFIG_FILE environment variable for subsequent steps
 
       - task: PowerShell@2
+        displayName: set terraform token
         inputs:
           targetType: inline
           script: |
@@ -46,6 +48,7 @@ stages:
             $content | Set-Content -Path $(TF_CLI_CONFIG_FILE)
 
       - task: PowerShell@2
+        displayName: terraform init
         inputs:
           targetType: inline
           script: |
@@ -53,6 +56,7 @@ stages:
             .\terraform.exe init
 
       - task: PowerShell@2
+        displayName: tidy up
         inputs:
           targetType: inline
           script: |
