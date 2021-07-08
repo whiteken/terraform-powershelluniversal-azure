@@ -16,11 +16,11 @@ stages:
         vmImage: 'vs2017-win2016'
 
       steps:
-
       - task: PowerShell@2
         inputs:
           targetType: inline
           script: |
+            #download terraform
             $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
             $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
             $downloadVersion = $releases.Where({!$_.prerelease})[0].name.trim('v')
@@ -34,10 +34,27 @@ stages:
             Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
             Copy-Item "$(Agent.TempDirectory)\terraform\terraform.exe" -Destination "$(System.DefaultWorkingDirectory)\IaC\terraform.exe"
 
+      - script: |
+          echo '##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc'
+        displayName: set TF_CLI_CONFIG_FILE environment variable for subsequent steps
+
       - task: PowerShell@2
         inputs:
           targetType: inline
           script: |
-            Get-ChildItem -Path "$(System.DefaultWorkingDirectory)\IaC" -Recurse -Verbose
+            $content = Get-Content -path $(TF_CLI_CONFIG_FILE) -Raw
+            $content = $content -replace '%%terraform-cloud-secret%%', $(terraform-cloud-secret)
+            $content | Set-Content -Path $(TF_CLI_CONFIG_FILE)
+
+      - task: PowerShell@2
+        inputs:
+          targetType: inline
+          script: |
             Set-Location $(Build.SourcesDirectory)\IaC
-            .\terraform.exe init -backend-config="$(terraform-cloud-secret)"
+            .\terraform.exe init
+
+      - task: PowerShell@2
+        inputs:
+          targetType: inline
+          script: |
+            Remove-Item -Path $(TF_CLI_CONFIG_FILE) -Force -Confirm:$false
