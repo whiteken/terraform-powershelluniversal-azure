@@ -62,8 +62,8 @@ stages:
           script: |
             Remove-Item -Path $(TF_CLI_CONFIG_FILE) -Force -Confirm:$false
 
-- ${{ if eq(parameters.terraformOperation, 'apply') }}:
-  - stage: Terraform_init
+- ${{ if eq(parameters.terraformOperation, 'plan') }}:
+  - stage: Terraform_plan
     variables:
     - group: powershelluniversal-webapp
     #- template: variables.yml
@@ -118,7 +118,7 @@ stages:
           targetType: inline
           script: |
             Set-Location $(Build.SourcesDirectory)\IaC
-            .\terraform.exe apply --auto-approve
+            .\terraform.exe plan #--auto-approve
 
       - task: PowerShell@2
         displayName: tidy up
