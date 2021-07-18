@@ -21,6 +21,7 @@ resource "azurerm_app_service" "webapp" {
 
   site_config {
     dotnet_framework_version  = "v4.0"
+    windows_fx_version = "DOTNETCORE|3.1"
     managed_pipeline_mode     = "Integrated"
     websockets_enabled        = true
     ftps_state                = "AllAllowed"
