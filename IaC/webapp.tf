@@ -13,7 +13,7 @@ resource "azurerm_app_service_plan" "myplan" {
   }
 }
 
-resource "azurerm_app_service" "main" {
+resource "azurerm_app_service" "webapp" {
   name                = var.project_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -25,5 +25,6 @@ resource "azurerm_app_service" "main" {
     websockets_enabled        = true
     ftps_state                = "AllAllowed"
     use_32_bit_worker_process = false
+    scm_type = "LocalGit" #required for export of ftp credentials
   }
 }
