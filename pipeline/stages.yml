@@ -118,7 +118,15 @@ stages:
           targetType: inline
           script: |
             Set-Location $(Build.SourcesDirectory)\IaC
-            .\terraform.exe plan #--auto-approve
+            .\terraform.exe plan -out=$(Build.SourcesDirectory)\IaC\outfile.json
+
+      - task: PowerShell@2
+        displayName: read back json outfile
+        inputs:
+          targetType: inline
+          script: |
+            Set-Location $(Build.SourcesDirectory)\IaC
+            .\outfile.json | ConvertFrom-Json
 
       - task: PowerShell@2
         displayName: tidy up
