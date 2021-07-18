@@ -113,7 +113,7 @@ stages:
             .\terraform.exe init
 
       - task: PowerShell@2
-        displayName: terraform init
+        displayName: terraform plan
         inputs:
           targetType: inline
           script: |
