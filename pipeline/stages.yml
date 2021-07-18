@@ -208,8 +208,15 @@ stages:
         inputs:
           targetType: inline
           script: |
-            Write-Host $(ftp_username)
-            Write-Host $(ftp_password)
+            if($([Environment]::GetEnvironmentVariable('ftp_username', 'Machine') -and $([Environment]::GetEnvironmentVariable('ftp_password', 'Machine')){
+              #these variables will only exist if terraform deployed the webapp
+              #so we need to ftp the site...
+              Set-Location $(Build.SourcesDirectory)\pipeline\resources
+              #Copy in the dashboard.ps1 file before ftping the lot up
+              #need to put the download path for the module into a variable to re
+              #TODO: Copy-Item -Path .\dashboard.ps1 -Destination $downloadPathforUniversalmodule
+              .\ftp-upload.ps1 -FTPHost -User $(ftp_user) -Password $(ftp_password) -UploadFolder $(Build.SourcesDirectory)\Universal
+            }
 
       - task: PowerShell@2
         displayName: tidy up
