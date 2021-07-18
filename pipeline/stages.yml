@@ -183,7 +183,32 @@ stages:
           targetType: inline
           script: |
             Set-Location $(Build.SourcesDirectory)\IaC
-            .\terraform.exe apply --auto-approve
+            $output = .\terraform.exe apply --auto-approve
+            $patternUsername = '"username" = "(.+?)"'
+            $result1 = [regex]::Match($output, $patternUsername)
+            if ($result1){
+              Write-Host  "##vso[task.setvariable variable=ftp_username]$($result1.Groups[1].value)"
+            }
+            $patternPassword = '"password" = "(.+?)"'
+            $result2 = [regex]::Match($output, $patternUsername)
+            if($result2){
+              Write-Host  "##vso[task.setvariable variable=ftp_password]$($result2.Groups[1].value)"
+            }
+
+      - task: PowerShell@2
+        displayName: Install from PowerShell Gallery
+        inputs:
+          targetType: inline
+          script: |
+            Find-Module Universal | Save-Module -Path $(Build.SourcesDirectory)\Universal
+
+      - task: PowerShell@2
+        displayName: display ftp creds (Debug)
+        inputs:
+          targetType: inline
+          script: |
+            Write-Host $(ftp_username)
+            Write-Host $(ftp_password)
 
       - task: PowerShell@2
         displayName: tidy up
