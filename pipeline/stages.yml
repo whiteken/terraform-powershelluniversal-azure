@@ -61,3 +61,68 @@ stages:
           targetType: inline
           script: |
             Remove-Item -Path $(TF_CLI_CONFIG_FILE) -Force -Confirm:$false
+
+- ${{ if eq(parameters.terraformOperation, 'apply') }}:
+  - stage: Terraform_init
+    variables:
+    - group: powershelluniversal-webapp
+    #- template: variables.yml
+    jobs:
+    - job: Terraform_init
+      pool:
+        vmImage: 'vs2017-win2016'
+
+      steps:
+      - task: PowerShell@2
+        displayName: Download terraform
+        inputs:
+          targetType: inline
+          script: |
+            #download terraform
+            $releasesUrl = 'https://api.github.com/repos/hashicorp/terraform/releases'
+            $releases = Invoke-RestMethod -Method Get -UseBasicParsing -Uri $releasesUrl -Verbose
+            $downloadVersion = $releases.Where({!$_.prerelease})[0].name.trim('v')
+            $terraformFile = "terraform_${downloadVersion}_windows_amd64.zip"
+            $terraformURL = "https://releases.hashicorp.com/terraform/${downloadVersion}/${terraformFile}"
+            $output = "$(Agent.TempDirectory)\terraform.zip"
+            $wc = New-Object System.Net.WebClient
+            $wc.DownloadFile($terraformURL, $output)
+            Unblock-File -Confirm:$false -Path "$(Agent.TempDirectory)\terraform.zip"
+            $newDir = New-Item -ItemType Directory -Path "$(Agent.TempDirectory)\terraform"
+            Expand-Archive -Path "$(Agent.TempDirectory)\terraform.zip" -DestinationPath $newDir.FullName -Force
+            Copy-Item "$(Agent.TempDirectory)\terraform\terraform.exe" -Destination "$(System.DefaultWorkingDirectory)\IaC\terraform.exe"
+
+      - bash: echo '##vso[task.setvariable variable=TF_CLI_CONFIG_FILE]$(System.DefaultWorkingDirectory)\IaC\cli-config.tfrc'
+        displayName: set TF_CLI_CONFIG_FILE environment variable for subsequent steps
+
+      - task: PowerShell@2
+        displayName: set terraform token
+        inputs:
+          targetType: inline
+          script: |
+            $content = Get-Content -Path $(TF_CLI_CONFIG_FILE) -Raw
+            $content = $content -replace '%%terraform-cloud-secret%%', "$(terraform-cloud-secret)"
+            $content | Set-Content -Path $(TF_CLI_CONFIG_FILE)
+
+      - task: PowerShell@2
+        displayName: terraform init
+        inputs:
+          targetType: inline
+          script: |
+            Set-Location $(Build.SourcesDirectory)\IaC
+            .\terraform.exe init
+
+      - task: PowerShell@2
+        displayName: terraform init
+        inputs:
+          targetType: inline
+          script: |
+            Set-Location $(Build.SourcesDirectory)\IaC
+            .\terraform.exe apply --auto-approve
+
+      - task: PowerShell@2
+        displayName: tidy up
+        inputs:
+          targetType: inline
+          script: |
+            Remove-Item -Path $(TF_CLI_CONFIG_FILE) -Force -Confirm:$false
